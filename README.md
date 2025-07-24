@@ -29,3 +29,34 @@ community-feedback-system/
 ├── .gitignore          # Ignore sensitive files
 ├── server.js           # Main entry point
 └── package.json
+
+
+---
+
+## ⚙️ Setup Instructions
+
+### **1. Clone the Repository**
+(in the git bash)
+git clone https://github.com/kulsum2001/community-feedback-system.git
+cd community-feedback-system 
+
+2. **Install Dependencies**   -- npm install
+3. Configure Environment Variables
+    Create a .env file in the root folder : PORT=3000
+                                            MONGO_URI=your_mongodb_connection_string
+                                            EMAIL_USER=your_email@example.com
+                                            EMAIL_PASS=your_email_password
+                                            JWT_SECRET=your_secret_key
+   (A .env.example is included for reference)
+4. Start the server : npm start
+5. Future Enhancement :  AI-based complaint categorization
+                         Mobile app integration
+                         Multi-language support
+6. Security:
+  .env and sensitive files are ignored using .gitignore
+  Credentials are stored in environment variables
+Author : Sakina Kulsum
+        email:sakinakulsum82@gmail.com
+
+   
+*If you like this project, please give it a star!*
