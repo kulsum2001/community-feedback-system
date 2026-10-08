@@ -1,0 +1,15 @@
+node_modules/
+.env
+.env.*
+!.env.example
+*.env
+community-feedback-system/.env
+community-feedback-system/.envv
+community-feedback-system/.env(example)
+
+uploads/
+community-feedback-system/uploads/
+
+data/db/
+
+*.log
