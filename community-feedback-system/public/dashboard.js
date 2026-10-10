@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ✅ Function to fetch all feedback
 async function fetchUserFeedback(token, userId) {
     try {
-        const response = await fetch('http://localhost:3000/api/feedback', {
+        const response = await fetch('/api/feedback', {
             headers: { Authorization: `Bearer ${token}` },
         });
 

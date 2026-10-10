@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000/api/admin";
+const API_BASE_URL = "/api/admin";
 
 // ✅ Get token from localStorage
 const adminToken = localStorage.getItem("adminToken"); // ✅ Correct key
@@ -59,7 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
 
             try {
-                const res = await fetch(`http://localhost:3000/api/feedback/${feedbackId}/respond`, {
+                const res = await fetch(`/api/feedback/${feedbackId}/respond`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 if (res.ok && data.success) {
                     // ✅ New PATCH request to mark as resolved
-                    await fetch(`http://localhost:3000/api/feedback/${feedbackId}/resolve`, {
+                    await fetch(`/api/feedback/${feedbackId}/resolve`, {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',

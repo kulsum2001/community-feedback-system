@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
 async function fetchUserFeedback() {
     try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:3000/api/feedback", {
+        const response = await fetch("/api/feedback", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         
@@ -65,7 +65,7 @@ async function submitFeedback(feedbackData) {
 
         const token = localStorage.getItem("token"); 
 
-        const response = await fetch('http://localhost:3000/api/feedback', {
+        const response = await fetch('/api/feedback', {
             method: 'POST',
             headers: { "Authorization": `Bearer ${token}` }, 
             body: formData
