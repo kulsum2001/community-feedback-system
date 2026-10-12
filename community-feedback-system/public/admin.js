@@ -29,15 +29,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         // ✅ Fetch Recent Activity
         const activityRes = await fetch(`${API_BASE_URL}/recent-activity`, { headers });
         const activityData = await activityRes.json();
+        
         const activityList = document.getElementById("recent-activity");
 
-        activityList.innerHTML = "";
-        activityData.forEach(activity => {
-            const li = document.createElement("li");
-            li.className = "list-group-item";
-            li.innerText = `User @${activity.user} submitted: "${activity.message}" - ${new Date(activity.createdAt).toLocaleDateString()}`;
-            activityList.appendChild(li);
-        });
+        // Display recent activity only if the HTML element exists.
+        if (activityList && Array.isArray(activityData)) {
+            activityList.innerHTML = "";
+
+            activityData.forEach(activity => {
+                const li = document.createElement("li");
+                li.className = "list-group-item";
+                li.innerText = `User @${activity.user} submitted: "${activity.message}" - ${new Date(activity.createdAt).toLocaleDateString()}`;
+                activityList.appendChild(li);
+            });
+        }
+;
 
     } catch (error) {
         console.error("❌ Error loading admin data:", error);
