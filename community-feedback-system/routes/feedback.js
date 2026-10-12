@@ -1,28 +1,37 @@
+
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const nodemailer = require('nodemailer');
 const cloudinary = require('cloudinary').v2;
+
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
-const { createFeedback, getAllFeedback, getFeedbackByUser, getFeedbackStats } = require('../controllers/feedbackController');
+
+const {
+    createFeedback,
+    getAllFeedback,
+    getFeedbackByUser,
+    getFeedbackStats
+} = require('../controllers/feedbackController');
+
 const { markFeedbackResolved } = require('../controllers/feedbackController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// ✅ Ensure 'uploads' directory exists
+// Ensure 'uploads' directory exists
 const uploadPath = path.join(__dirname, '../uploads');
+
 if (!fs.existsSync(uploadPath)) {
     fs.mkdirSync(uploadPath, { recursive: true });
-    console.log("✅ 'uploads/' folder created successfully!");
+    console.log("'uploads/' folder created successfully!");
 }
 
-// ✅ Multer Configuration
+// Multer Configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadPath),
     filename: (req, file, cb) => {
@@ -34,105 +43,169 @@ const fileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
         cb(null, true);
     } else {
-        cb(new Error('❌ Only image files are allowed!'), false);
+        cb(new Error('Only image files are allowed!'), false);
     }
 };
 
 const upload = multer({ storage, fileFilter });
 
-// ✅ Configure NodeMailer
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER, // Your email address
-        pass: process.env.EMAIL_PASS  // Your email password (use an app password)
+// Send emails using the Resend API
+async function sendEmail(mailOptions) {
+    if (!process.env.RESEND_API_KEY) {
+        throw new Error('RESEND_API_KEY is not configured');
     }
-});
-        // ✅ Verify Transporter Connection
-    transporter.verify((error, success) => {
-    if (error) {
-        console.error("❌ Nodemailer Error:", error);
-    } else {
-        console.log("✅ Nodemailer Ready to Send Emails!");
-    }
-});
 
-// ✅ Route to Handle Feedback Submission (POST)
+    if (!process.env.RESEND_FROM_EMAIL) {
+        throw new Error('RESEND_FROM_EMAIL is not configured');
+    }
+
+    const attachments = (mailOptions.attachments || []).map(file => ({
+        filename: file.filename,
+        content: fs.readFileSync(file.path).toString('base64'),
+        content_id: file.cid
+    }));
+
+    const payload = {
+        from: process.env.RESEND_FROM_EMAIL,
+        to: Array.isArray(mailOptions.to)
+            ? mailOptions.to
+            : [mailOptions.to],
+        subject: mailOptions.subject,
+        ...(mailOptions.html ? { html: mailOptions.html } : {}),
+        ...(mailOptions.text ? { text: mailOptions.text } : {}),
+        ...(attachments.length ? { attachments } : {})
+    };
+
+    const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const responseText = await response.text();
+    let result;
+
+    try {
+        result = JSON.parse(responseText);
+    } catch {
+        result = { message: responseText };
+    }
+
+    if (!response.ok) {
+        throw new Error(
+            result.message || `Resend API error: ${response.status}`
+        );
+    }
+
+    return result;
+}
+
+// Route to Handle Feedback Submission (POST)
 router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => {
     try {
-        console.log("📥 Incoming request body:", req.body);
-        console.log("📷 Uploaded Files:", req.files);
+        console.log('Incoming request body:', req.body);
+        console.log('Uploaded Files:', req.files);
 
         if (!req.user) {
-            return res.status(401).json({ success: false, message: "Unauthorized! Login required." });
+            return res.status(401).json({
+                success: false,
+                message: 'Unauthorized! Login required.'
+            });
         }
 
-        // ❌ Prevent admins from submitting feedback
+        // Prevent admins from submitting feedback
         if (req.user.role === 'admin') {
-            return res.status(403).json({ success: false, message: "Admins cannot submit feedback!" });
+            return res.status(403).json({
+                success: false,
+                message: 'Admins cannot submit feedback!'
+            });
         }
 
         if (!req.body || Object.keys(req.body).length === 0) {
-            return res.status(400).json({ success: false, message: "Request body is missing!" });
+            return res.status(400).json({
+                success: false,
+                message: 'Request body is missing!'
+            });
         }
 
         const { userId, title, category, description, location } = req.body;
+
         if (!userId || !title || !category || !description) {
-            return res.status(400).json({ success: false, message: "Missing required fields" });
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields'
+            });
         }
 
-        
-const imageUrls = req.files && req.files.length > 0
-    ? await Promise.all(
-        req.files.map(async (file) => {
-            const result = await cloudinary.uploader.upload(file.path, {
-                folder: 'community-feedback-system',
-                resource_type: 'image'
-            });
+        // Upload images to Cloudinary
+        const imageUrls = req.files && req.files.length > 0
+            ? await Promise.all(
+                req.files.map(async (file) => {
+                    const result = await cloudinary.uploader.upload(file.path, {
+                        folder: 'community-feedback-system',
+                        resource_type: 'image'
+                    });
 
-            return result.secure_url;
-        })
-    )
-    : [];
+                    return result.secure_url;
+                })
+            )
+            : [];
 
+        // Parse location
+        let parsedLocation = {
+            type: 'Point',
+            coordinates: [0, 0]
+        };
 
-        let parsedLocation = { type: 'Point', coordinates: [0, 0] };
         if (location) {
             try {
                 parsedLocation = JSON.parse(location);
             } catch (error) {
-                console.log("🚨 Invalid location format:", error.message);
-                return res.status(400).json({ success: false, message: "Invalid location format" });
+                console.log('Invalid location format:', error.message);
+
+                return res.status(400).json({
+                    success: false,
+                    message: 'Invalid location format'
+                });
             }
         }
 
         req.body.images = imageUrls;
         req.body.location = parsedLocation;
 
-        // ✅ Get feedback data without sending a response
+        // Save feedback
         const feedback = await createFeedback(req, res);
+
         if (!res.headersSent) {
-            res.status(201).json({ success: true, message: "Feedback submitted successfully", feedback });
+            res.status(201).json({
+                success: true,
+                message: 'Feedback submitted successfully',
+                feedback
+            });
         }
 
-        // ✅ Send email after response is sent
+        // Send email notification to admin
         if (feedback) {
-            console.log("📧 Sending email notification...");
+            console.log('Sending email notification...');
 
-            const imageTags = req.files.map(file => 
-                `<p><img src="cid:${file.filename}" alt="Feedback Image" style="max-width:300px; display:block; margin-top:10px; border: 1px solid #ddd;"></p>`
-            ).join("");
+            const uploadedFiles = req.files || [];
 
-            const attachments = req.files.map(file => ({
+            const imageTags = uploadedFiles.map(file =>
+                `<p><img src="cid:${file.filename}" alt="Feedback Image" style="max-width:300px; display:block; margin-top:10px; border:1px solid #ddd;"></p>`
+            ).join('');
+
+            const attachments = uploadedFiles.map(file => ({
                 filename: file.filename,
-                path: file.path, // Correct file path
-                cid: file.filename // Content-ID must match src in email HTML
+                path: file.path,
+                cid: file.filename
             }));
 
             const mailOptions = {
-                from: process.env.EMAIL_USER,
-                to: "admin@example.com", // here add the admin email
-                subject: "New Community Feedback Submitted",
+                to: process.env.ADMIN_EMAIL,
+                subject: 'New Community Feedback Submitted',
                 html: `<p><strong>A new feedback has been submitted:</strong></p>
                        <p><strong>Title:</strong> ${title}</p>
                        <p><strong>Category:</strong> ${category}</p>
@@ -140,111 +213,154 @@ const imageUrls = req.files && req.files.length > 0
                        <p><strong>User ID:</strong> ${userId}</p>
                        <p>Check the admin panel for more details.</p>
                        <p><strong>Images:</strong></p>
-                       ${imageTags}`,  // ✅ Embed images properly here
-                attachments: attachments // ✅ Attach images correctly
+                       ${imageTags}`,
+                attachments
             };
 
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    console.error("❌ Error sending email:", error);
-                } else {
-                    console.log("✅ Email sent successfully:", info.response);
-                }
-            });
+            try {
+                const info = await sendEmail(mailOptions);
+                console.log('Feedback email sent successfully:', info.id);
+            } catch (error) {
+                console.error(
+                    'Error sending feedback email:',
+                    error.message
+                );
+            }
         }
 
     } catch (error) {
-        console.error("🔥 Error submitting feedback:", error.message);
-        
-        // ✅ Only send response if headers haven't been sent
+        console.error('Error submitting feedback:', error.message);
+
         if (!res.headersSent) {
-            res.status(500).json({ success: false, message: "Server error", error: error.message });
+            res.status(500).json({
+                success: false,
+                message: 'Server error',
+                error: error.message
+            });
         }
     }
 });
+
+// Get all feedbacks
 router.get('/all-feedbacks', async (req, res) => {
     try {
-      const feedbacks = await Feedback.find().populate('userId', 'email name');
-      res.json(feedbacks);
+        const Feedback = require('../models/Feedback');
+        const feedbacks = await Feedback.find().populate('userId', 'email name');
+        res.json(feedbacks);
     } catch (error) {
-      console.error("Error fetching feedbacks:", error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
-  
-  
+        console.error('Error fetching feedbacks:', error);
 
-// ✅ Get All Feedback (GET)
+        res.status(500).json({
+            error: 'Internal Server Error'
+        });
+    }
+});
+
+// Get All Feedback (GET)
 router.get('/', async (req, res) => {
     try {
         await getAllFeedback(req, res);
     } catch (error) {
-        console.error("🔥 Error fetching feedback:", error);
-        res.status(500).json({ success: false, message: "Server error", error: error.message });
+        console.error('Error fetching feedback:', error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
     }
 });
 
-// ✅ Get Feedback for a Specific User (GET)
+// Get Feedback for a Specific User (GET)
 router.get('/user/:userId', async (req, res) => {
     try {
         await getFeedbackByUser(req, res);
     } catch (error) {
-        console.error("🔥 Error fetching user feedback:", error);
-        res.status(500).json({ success: false, message: "Server error", error: error.message });
+        console.error('Error fetching user feedback:', error);
+
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
     }
 });
+
+// Get feedback statistics (admin only)
 router.get('/stats', authMiddleware, async (req, res) => {
     if (req.user.role !== 'admin') {
-        return res.status(403).json({ success: false, message: 'Admins only!' });
+        return res.status(403).json({
+            success: false,
+            message: 'Admins only!'
+        });
     }
+
     await getFeedbackStats(req, res);
 });
 
-// ✅ Serve Uploaded Images
+// Serve uploaded images
 router.use('/uploads', express.static(uploadPath));
-// ✅ Route for Admin to Respond to Feedback via Email
-// ✅ Route for Admin to Respond to Feedback via Email and Mark as Resolved
+
+// Admin responds to feedback via email and marks it as resolved
 router.post('/:id/respond', authMiddleware, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: 'Admins only!' });
+            return res.status(403).json({
+                success: false,
+                message: 'Admins only!'
+            });
         }
 
         const { message } = req.body;
         const feedbackId = req.params.id;
 
         const Feedback = require('../models/Feedback');
-        const feedback = await Feedback.findById(feedbackId).populate('userId', 'email name');
+
+        const feedback = await Feedback.findById(feedbackId)
+            .populate('userId', 'email name');
 
         if (!feedback || !feedback.userId?.email) {
-            return res.status(404).json({ success: false, message: 'Feedback or user not found' });
+            return res.status(404).json({
+                success: false,
+                message: 'Feedback or user not found'
+            });
         }
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
             to: feedback.userId.email,
             subject: `Response to your feedback: "${feedback.title}"`,
             text: `Dear ${feedback.userId.name || 'User'},\n\n${message}\n\nBest regards,\nCommunity Admin`
         };
 
-        // ✅ Send email
-        await transporter.sendMail(mailOptions);
-        console.log("📨 Admin response email sent to:", feedback.userId.email);
+        // Send email through Resend
+        await sendEmail(mailOptions);
 
-        // ✅ Update feedback status to 'resolved'
+        console.log(
+            'Admin response email sent to:',
+            feedback.userId.email
+        );
+
+        // Mark feedback as resolved only after email succeeds
         feedback.status = 'resolved';
         await feedback.save();
 
-        res.json({ success: true, message: 'Response sent and feedback marked as resolved.' });
+        res.json({
+            success: true,
+            message: 'Response sent and feedback marked as resolved.'
+        });
 
     } catch (error) {
-        console.error("❌ Failed to send admin response:", error.message);
-        res.status(500).json({ success: false, message: 'Failed to send email', error: error.message });
+        console.error('Failed to send admin response:', error.message);
+
+        res.status(500).json({
+            success: false,
+            message: 'Failed to send email',
+            error: error.message
+        });
     }
 });
 
-// ✅ Mark Feedback as Resolved
+// Mark Feedback as Resolved
 router.patch('/:id/resolve', markFeedbackResolved);
-
 
 module.exports = router;
