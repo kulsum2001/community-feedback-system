@@ -15,8 +15,11 @@ const createFeedback = async (req, res) => {
 
         // Extract form fields
         const { userId, title, category, description, location } = req.body;
-        const images = req.files ? req.files.map(file => file.path) : []; // Extract image file paths
-
+        
+        const images = Array.isArray(req.body.images)
+        ? req.body.images
+        : [];
+     // Extract image file paths
         // Validate required fields
         if (!userId || !title || !category || !description) {
             console.log("🚨 Missing fields:", { userId, title, category, description });
