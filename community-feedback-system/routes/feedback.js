@@ -75,7 +75,20 @@ router.post('/', authMiddleware, upload.array('images', 5), async (req, res) => 
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 
-        const imageUrls = req.files ? req.files.map(file => `/static/uploads/${file.filename}`) : [];
+        
+const imageUrls = req.files && req.files.length > 0
+    ? await Promise.all(
+        req.files.map(async (file) => {
+            const result = await cloudinary.uploader.upload(file.path, {
+                folder: 'community-feedback-system',
+                resource_type: 'image'
+            });
+
+            return result.secure_url;
+        })
+    )
+    : [];
+
 
         let parsedLocation = { type: 'Point', coordinates: [0, 0] };
         if (location) {
