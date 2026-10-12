@@ -21,7 +21,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         if (!feedbackRes.ok) {
-            throw new Error(`Feedback overview failed: ${feedbackRes.status}`);
+            throw new Error(
+                `Feedback overview failed: ${feedbackRes.status}`
+            );
         }
 
         const feedbackData = await feedbackRes.json();
@@ -41,7 +43,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
 
         if (!usersRes.ok) {
-            throw new Error(`User statistics failed: ${usersRes.status}`);
+            throw new Error(
+                `User statistics failed: ${usersRes.status}`
+            );
         }
 
         const usersData = await usersRes.json();
@@ -59,13 +63,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
 
         if (!activityRes.ok) {
-            throw new Error(`Recent activity failed: ${activityRes.status}`);
+            throw new Error(
+                `Recent activity failed: ${activityRes.status}`
+            );
         }
 
         const activityData = await activityRes.json();
-        const activityList = document.getElementById("recent-activity");
+        const activityList =
+            document.getElementById("recent-activity");
 
-        // Display activity only when the HTML element exists
+        // Display recent activity and feedback IDs
         if (activityList && Array.isArray(activityData)) {
             activityList.innerHTML = "";
 
@@ -94,11 +101,59 @@ document.addEventListener("DOMContentLoaded", async () => {
                         "Submitted feedback";
 
                     const date = activity.createdAt
-                        ? new Date(activity.createdAt).toLocaleDateString()
+                        ? new Date(
+                            activity.createdAt
+                        ).toLocaleDateString()
                         : "Date unavailable";
 
-                    li.textContent =
+                    const details = document.createElement("p");
+                    details.textContent =
                         `${submittedBy} — ${description} — ${date}`;
+
+                    const idText = document.createElement("p");
+                    idText.textContent =
+                        `Feedback ID: ${activity._id || "Unavailable"}`;
+
+                    const useButton = document.createElement("button");
+                    useButton.type = "button";
+                    useButton.className = "btn btn-primary btn-sm";
+                    useButton.textContent = "Respond to this feedback";
+
+                    useButton.disabled = !activity._id;
+
+                    useButton.addEventListener("click", () => {
+                        const feedbackIdInput =
+                            document.getElementById("feedback-id");
+
+                        const messageInput =
+                            document.getElementById("admin-message");
+
+                        const respondForm =
+                            document.getElementById("respond-form");
+
+                        if (
+                            !feedbackIdInput ||
+                            !messageInput ||
+                            !respondForm
+                        ) {
+                            console.error(
+                                "The feedback response form was not found."
+                            );
+                            return;
+                        }
+
+                        feedbackIdInput.value = activity._id;
+                        messageInput.focus();
+
+                        respondForm.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+                    });
+
+                    li.appendChild(details);
+                    li.appendChild(idText);
+                    li.appendChild(useButton);
 
                     activityList.appendChild(li);
                 });
@@ -122,11 +177,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("admin-message").value.trim();
 
             if (!feedbackId || !message) {
-                alert("Please enter both Feedback ID and response message.");
+                alert(
+                    "Please enter both Feedback ID and response message."
+                );
                 return;
             }
 
             try {
+                // Send response to feedback
                 const res = await fetch(
                     `/api/feedback/${encodeURIComponent(feedbackId)}/respond`,
                     {
@@ -141,37 +199,54 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 const data = await res.json();
 
-                if (res.ok && data.success) {
-                    const resolveRes = await fetch(
-                        `/api/feedback/${encodeURIComponent(feedbackId)}/resolve`,
-                        {
-                            method: "PATCH",
-                            headers: {
-                                Authorization: `Bearer ${adminToken}`
-                            }
-                        }
-                    );
-
-                    if (!resolveRes.ok) {
-                        throw new Error(
-                            "Response was sent, but resolving feedback failed."
-                        );
-                    }
-
-                    alert("Response sent and feedback marked as resolved!");
-
-                    respondForm.reset();
-                    await fetchFeedbackStats();
-                } else {
+                if (!res.ok || !data.success) {
                     console.error("Server error:", data.message);
+
                     alert(
                         "Failed to send response: " +
                         (data.message || "Unknown error")
                     );
+                    return;
                 }
+
+                // Mark feedback as resolved
+                const resolveRes = await fetch(
+                    `/api/feedback/${encodeURIComponent(feedbackId)}/resolve`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            Authorization: `Bearer ${adminToken}`
+                        }
+                    }
+                );
+
+                if (!resolveRes.ok) {
+                    alert(
+                        "Response sent, but marking the feedback as resolved failed. " +
+                        "Please check the feedback status."
+                    );
+
+                    await fetchFeedbackStats();
+                    return;
+                }
+
+                alert(
+                    "Response sent and feedback marked as resolved!"
+                );
+
+                respondForm.reset();
+
+                await fetchFeedbackStats();
+
+                // Reload activity to refresh the list
+                window.location.reload();
+
             } catch (err) {
                 console.error("Response submission error:", err);
-                alert(err.message || "A network error occurred.");
+
+                alert(
+                    err.message || "A network error occurred."
+                );
             }
         });
     }
@@ -182,7 +257,9 @@ async function fetchFeedbackStats() {
     const token = localStorage.getItem("adminToken");
 
     if (!token) {
-        console.error("Admin token not found. Please log in again.");
+        console.error(
+            "Admin token not found. Please log in again."
+        );
         return;
     }
 
@@ -207,8 +284,12 @@ async function fetchFeedbackStats() {
 
         document.getElementById("resolved-feedback").textContent =
             data.resolvedFeedback ?? 0;
+
     } catch (error) {
-        console.error("Error fetching admin statistics:", error);
+        console.error(
+            "Error fetching admin statistics:",
+            error
+        );
     }
 }
 
