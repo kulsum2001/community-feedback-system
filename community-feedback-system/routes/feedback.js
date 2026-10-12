@@ -3,6 +3,12 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const nodemailer = require('nodemailer');
+const cloudinary = require('cloudinary').v2;
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 const { createFeedback, getAllFeedback, getFeedbackByUser, getFeedbackStats } = require('../controllers/feedbackController');
 const { markFeedbackResolved } = require('../controllers/feedbackController');
 const authMiddleware = require('../middleware/authMiddleware');
