@@ -1,16 +1,16 @@
-/* Custom styles for the Community Feedback System
+/* Custom styles for the Community Feedback System */
 body {
     font-family: 'Poppins', sans-serif;
     min-height: 100vh;
-    background: linear-gradient(180deg, #E8ECEF 0%, #F5F7FA 100%);
-    color: #2D3748;
+    background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%);
+    color: var(--text);
     margin: 0;
     line-height: 1.6;
 }
 
 /* Header with Dynamic Gradient and Shadow */
 header {
-    background: linear-gradient(135deg, #1A2A44 0%, #3B5998 100%);
+    background: var(--header-grad);
     margin-bottom: 2.5rem;
     padding: 20px;
     text-align: center;
@@ -27,14 +27,14 @@ header h1 {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    background: -webkit-linear-gradient(#FFFFFF, #A3BFFA);
+    background: var(--h1-grad);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 /* Background Gradient Container */
 .bg-gradient {
-    background: linear-gradient(145deg, #E2E8F0, #CBD5E1);
+    background: var(--panel-grad);
     padding: 25px;
     border-radius: 15px;
     box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -47,7 +47,7 @@ header h1 {
 
 /* Buttons with Glow and Scale Effects */
 .btn-primary {
-    background: linear-gradient(90deg, #4299E1 0%, #3182CE 100%);
+    background: var(--primary-grad);
     color: #FFFFFF;
     border: none;
     padding: 12px 20px;
@@ -57,13 +57,13 @@ header h1 {
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+    box-shadow: 0 4px 15px var(--primary-shadow);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(90deg, #2B6CB0 0%, #2C5282 100%);
+    background: var(--primary-grad-hover);
     transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(66, 153, 225, 0.5);
+    box-shadow: 0 6px 20px var(--primary-shadow-strong);
 }
 
 /* Danger (Delete) Button */
@@ -110,7 +110,7 @@ header h1 {
 
 /* Feedback Card with Hover Animation */
 .feedback-card {
-    background: #FFFFFF;
+    background: var(--surface);
     border-radius: 15px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     padding: 25px;
@@ -132,7 +132,7 @@ header h1 {
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, #4299E1, #48BB78);
+    background: var(--accent-bar);
     opacity: 0.8;
 }
 
@@ -179,8 +179,262 @@ header h1 {
     align-items: center;
     justify-content: center;
     border-radius: 15px;
-    background: linear-gradient(135deg, #1A2A44 0%, #3B5998 100%);
+    background: var(--header-grad);
     color: #FFFFFF;
     font-size: 4.5rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-} */
+}
+
+/* ==========================================================
+   Theme system — Community Feedback System
+   Themes are selected via <html data-theme="...">.
+   To add a theme: copy a block below, change the values,
+   then add it to the THEMES list in theme.js.
+   ========================================================== */
+
+/* Classic Blue (default) */
+:root,
+[data-theme="classic"] {
+    --bg-start: #E8ECEF;
+    --bg-end: #F5F7FA;
+    --panel-grad: linear-gradient(145deg, #E2E8F0, #CBD5E1);
+    --surface: #FFFFFF;
+    --text: #2D3748;
+    --muted: #6c757d;
+    --heading: #1A2A44;
+    --header-grad: linear-gradient(135deg, #1A2A44 0%, #3B5998 100%);
+    --h1-grad: linear-gradient(#FFFFFF, #A3BFFA);
+    --primary-grad: linear-gradient(90deg, #4299E1 0%, #3182CE 100%);
+    --primary-grad-hover: linear-gradient(90deg, #2B6CB0 0%, #2C5282 100%);
+    --primary-shadow: rgba(66, 153, 225, 0.3);
+    --primary-shadow-strong: rgba(66, 153, 225, 0.5);
+    --accent-bar: linear-gradient(90deg, #4299E1, #48BB78);
+    --footer-bg: #1A2A44;
+    --border: #ced4da;
+    --btn-solid: #1A2A44;
+    --btn-solid-hover: #2A3A54;
+}
+
+/* Dark (navy + neon) */
+[data-theme="dark"] {
+    --bg-start: #0B1020;
+    --bg-end: #121A33;
+    --panel-grad: linear-gradient(145deg, #111830, #1A2444);
+    --surface: #1B2440;
+    --text: #E2E8F0;
+    --muted: #94A3B8;
+    --heading: #E6EDFF;
+    --header-grad: linear-gradient(135deg, #050814 0%, #1E2A5A 100%);
+    --h1-grad: linear-gradient(#FFFFFF, #7DF9FF);
+    --primary-grad: linear-gradient(90deg, #00B8D4 0%, #6C4DFF 100%);
+    --primary-grad-hover: linear-gradient(90deg, #0097A7 0%, #5A3FE0 100%);
+    --primary-shadow: rgba(0, 184, 212, 0.35);
+    --primary-shadow-strong: rgba(0, 184, 212, 0.55);
+    --accent-bar: linear-gradient(90deg, #00E5FF, #B388FF);
+    --footer-bg: #050814;
+    --border: #34406A;
+    --btn-solid: #6C4DFF;
+    --btn-solid-hover: #5A3FE0;
+}
+
+/* Teal & Green */
+[data-theme="teal"] {
+    --bg-start: #E6F4F1;
+    --bg-end: #F4FBF9;
+    --panel-grad: linear-gradient(145deg, #D5EDE7, #B8DDD3);
+    --surface: #FFFFFF;
+    --text: #1F3B36;
+    --muted: #5B7A73;
+    --heading: #0B4F45;
+    --header-grad: linear-gradient(135deg, #0B4F45 0%, #2BA58A 100%);
+    --h1-grad: linear-gradient(#FFFFFF, #B6F2DF);
+    --primary-grad: linear-gradient(90deg, #14B8A6 0%, #0D9488 100%);
+    --primary-grad-hover: linear-gradient(90deg, #0F766E 0%, #115E59 100%);
+    --primary-shadow: rgba(20, 184, 166, 0.3);
+    --primary-shadow-strong: rgba(20, 184, 166, 0.5);
+    --accent-bar: linear-gradient(90deg, #14B8A6, #84CC16);
+    --footer-bg: #0B4F45;
+    --border: #B8D8D0;
+    --btn-solid: #0B4F45;
+    --btn-solid-hover: #0F766E;
+}
+
+/* Purple & Pink */
+[data-theme="purple"] {
+    --bg-start: #F3EEFB;
+    --bg-end: #FBF7FF;
+    --panel-grad: linear-gradient(145deg, #E9DDF9, #D9C5F3);
+    --surface: #FFFFFF;
+    --text: #2E2342;
+    --muted: #6F6485;
+    --heading: #4A1D7A;
+    --header-grad: linear-gradient(135deg, #4A1D7A 0%, #C2418F 100%);
+    --h1-grad: linear-gradient(#FFFFFF, #FBC7E6);
+    --primary-grad: linear-gradient(90deg, #9333EA 0%, #DB2777 100%);
+    --primary-grad-hover: linear-gradient(90deg, #7E22CE 0%, #BE185D 100%);
+    --primary-shadow: rgba(147, 51, 234, 0.3);
+    --primary-shadow-strong: rgba(147, 51, 234, 0.5);
+    --accent-bar: linear-gradient(90deg, #9333EA, #EC4899);
+    --footer-bg: #3B1566;
+    --border: #D6C4EE;
+    --btn-solid: #4A1D7A;
+    --btn-solid-hover: #6B2CA8;
+}
+
+/* Warm Orange & Cream */
+[data-theme="warm"] {
+    --bg-start: #FFF3E6;
+    --bg-end: #FFFAF3;
+    --panel-grad: linear-gradient(145deg, #FFE8CC, #FDD9B0);
+    --surface: #FFFDF8;
+    --text: #43302B;
+    --muted: #8A6F63;
+    --heading: #9A3412;
+    --header-grad: linear-gradient(135deg, #B4390A 0%, #E8830C 100%);
+    --h1-grad: linear-gradient(#FFFFFF, #FFE6BF);
+    --primary-grad: linear-gradient(90deg, #F97316 0%, #EA580C 100%);
+    --primary-grad-hover: linear-gradient(90deg, #C2410C 0%, #9A3412 100%);
+    --primary-shadow: rgba(249, 115, 22, 0.3);
+    --primary-shadow-strong: rgba(249, 115, 22, 0.5);
+    --accent-bar: linear-gradient(90deg, #F97316, #FACC15);
+    --footer-bg: #7C2D12;
+    --border: #EBCBB0;
+    --btn-solid: #9A3412;
+    --btn-solid-hover: #C2410C;
+}
+
+/* ---------- Overrides so Bootstrap pieces follow the theme ---------- */
+/* Bootstrap's own .bg-gradient utility (!important) was hiding the page gradient from style.css */
+html {
+    background-color: var(--bg-end);
+}
+
+body.bg-gradient {
+    background: linear-gradient(180deg, var(--bg-start) 0%, var(--bg-end) 100%) !important;
+}
+
+header.bg-dark {
+    background: var(--header-grad) !important;
+}
+
+.bg-white {
+    background-color: var(--surface) !important;
+    color: var(--text);
+}
+
+.text-muted {
+    color: var(--muted) !important;
+}
+
+.card {
+    --bs-card-bg: var(--surface);
+    --bs-card-color: var(--text);
+    --bs-card-border-color: var(--border);
+}
+
+.list-group-item {
+    --bs-list-group-bg: var(--surface);
+    --bs-list-group-color: var(--text);
+    --bs-list-group-border-color: var(--border);
+}
+
+.form-control,
+.form-select {
+    border-color: var(--border);
+}
+
+/* ---------- Theme switcher (floating button, bottom-right) ---------- */
+#theme-switcher {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 2000;
+    font-family: 'Poppins', sans-serif;
+}
+
+#theme-switcher .ts-toggle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: var(--header-grad);
+    color: #FFFFFF;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+}
+
+#theme-switcher .ts-toggle:hover {
+    transform: scale(1.08);
+}
+
+#theme-switcher .ts-panel {
+    display: none;
+    position: absolute;
+    right: 0;
+    bottom: 58px;
+    width: 210px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+#theme-switcher.open .ts-panel {
+    display: block;
+}
+
+#theme-switcher .ts-title {
+    margin: 2px 4px 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+#theme-switcher .ts-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 7px 8px;
+    margin-bottom: 4px;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+#theme-switcher .ts-option:hover {
+    background: rgba(127, 127, 127, 0.12);
+}
+
+#theme-switcher .ts-option.active {
+    border-color: var(--btn-solid);
+    font-weight: 600;
+}
+
+#theme-switcher .ts-swatch {
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- Inline-colour overrides (so existing HTML needs no edits) ---------- */
+[style*="#1A2A44"] {
+    color: var(--heading) !important;
+}
+
+footer[style*="#1A2A44"] {
+    background: var(--footer-bg) !important;
+    color: #FFFFFF !important;
+}
