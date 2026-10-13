@@ -13,7 +13,7 @@ document.getElementById("admin-login-form").addEventListener("submit", async (e)
         const data = await response.json();
         if (response.ok) {
             message.textContent = "Login successful! Redirecting...";
-            message.style.color = "#1A2A44";
+            message.style.color = "var(--heading)";
             localStorage.setItem("adminToken", data.token); // ✅ This is the fix!
             setTimeout(() => window.location.href = "admin.html", 1000);
         } else {

@@ -11,10 +11,11 @@
     <!-- Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <script src="theme.js"></script>
+        <link rel="stylesheet" href="style.css">
     <style>
         /* Internal CSS for Admin Login */
         body {
-            background: linear-gradient(135deg, #1A2A44 0%, #4A6A88 100%);
+            background: var(--header-grad);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -23,7 +24,7 @@
             margin: 0;
         }
         .login-container {
-            background: #ffffff;
+            background: var(--surface);
             padding: 2.5rem;
             border-radius: 15px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
@@ -31,7 +32,7 @@
             width: 100%;
         }
         .login-container h2 {
-            color: #1A2A44;
+            color: var(--heading);
             font-weight: 700;
             margin-bottom: 1.5rem;
         }
@@ -39,11 +40,11 @@
             border-radius: 8px;
             padding: 0.75rem;
             margin-bottom: 1rem;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--border);
             font-size: 1rem;
         }
         .btn-login {
-            background: #1A2A44;
+            background: var(--btn-solid);
             color: #ffffff;
             border: none;
             padding: 0.75rem;
@@ -53,27 +54,28 @@
             width: 100%;
         }
         .btn-login:hover {
-            background: #2A3A54;
+            background: var(--btn-solid-hover);
         }
         #message {
             margin-top: 1rem;
             font-size: 0.9rem;
             text-align: center;
-            color: #6c757d;
+            color: var(--muted);
         }
         .text-muted {
-            color: #6c757d !important;
+            color: var(--muted) !important;
         }
         .text-center a {
             text-decoration: none;
-            color: #6c757d;
+            color: var(--muted);
             font-size: 0.85rem;
         }
         .text-center a:hover {
-            color: #1A2A44;
+            color: var(--heading);
         }
         /* Ensure animations work with Animate.css */
         .animate-text {
+            opacity: 1;
             animation: fadeInUp 0.5s ease-in-out;
         }
         @keyframes fadeInUp {
@@ -87,32 +89,6 @@
             }
         }
     </style>
-</head>
-<body>
-    <div class="login-container animate__animated animate__fadeIn">
-        <h2 class="text-center animate-text">Admin Login</h2>
-        <p class="text-center text-muted animate-text" style="animation-delay: 0.2s;">
-            Access the Community Feedback System Dashboard
-        </p>
-        <form id="admin-login-form">
-            <div class="mb-3">
-                <input type="email" id="email" class="form-control" placeholder="Admin Email" required>
-            </div>
-            <div class="mb-3">
-                <input type="password" id="password" class="form-control" placeholder="Password" required>
-            </div>
-            <button type="submit" class="btn btn-login animate-text" style="animation-delay: 0.4s;">Login</button>
-        </form>
-        <p id="message" class="animate-text" style="animation-delay: 0.6s;"></p>
-        <div class="text-center mt-3">
-            <a href="index.html" class="animate-text" style="animation-delay: 0.8s;">Back to Home</a>
-        </div>
-    </div>
-
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-    <!-- Custom JS -->
-    <script defer src="adminLogin.js"></script>
+    <script src="theme.js"></script>
 </body>
 </html>
