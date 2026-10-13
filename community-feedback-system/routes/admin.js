@@ -48,7 +48,7 @@ router.get("/overview", isAdminMiddleware, async (req, res) => {
 router.get("/users", isAdminMiddleware, async (req, res) => {
     try {
         const totalUsers = await User.countDocuments();
-        const activeContributors = await Feedback.distinct("user").length; // Count unique users who submitted feedback
+        const activeContributors = (await Feedback.distinct("userId")).length; // Count unique users who submitted feedback
 
         res.json({ totalUsers, activeContributors });
     } catch (error) {
