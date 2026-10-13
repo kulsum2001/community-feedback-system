@@ -1,4 +1,3 @@
-
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
@@ -326,10 +325,17 @@ router.post('/:id/respond', authMiddleware, async (req, res) => {
             });
         }
 
+        // Resend sandbox: only the account owner's email can receive mail.
+        // If DEV_EMAIL is set, redirect to it; remove DEV_EMAIL once a domain is verified.
+        const recipient = process.env.DEV_EMAIL || feedback.userId.email;
+        const sandboxNote = process.env.DEV_EMAIL
+            ? `[Intended for: ${feedback.userId.email}]\n\n`
+            : '';
+
         const mailOptions = {
-            to: feedback.userId.email,
+            to: recipient,
             subject: `Response to your feedback: "${feedback.title}"`,
-            text: `Dear ${feedback.userId.name || 'User'},\n\n${message}\n\nBest regards,\nCommunity Admin`
+            text: `${sandboxNote}Dear ${feedback.userId.name || 'User'},\n\n${message}\n\nBest regards,\nCommunity Admin`
         };
 
         // Send email through Resend
